@@ -19,13 +19,15 @@ for line in file:
         # print(line)
     index += 1
 
-
-#restarts[0] = file[restart_index[8]:restart_index[9]]
-
 for i in range(0, len(restart_index)):
+    print(i)
     try:
         restarts[i] = file[restart_index[i]:restart_index[i + 1]]
     except:
         pass
+    
+        
+    
+
 
 pprint(restarts)
