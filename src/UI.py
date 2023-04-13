@@ -23,6 +23,11 @@ def get_input(str_to_show):
     p = p.split(',')
     stripped = [s.strip() for s in p]
     for i, v in enumerate(stripped.copy()):
+        stripped[i] = v.replace("data", "")
+        stripped[i] = v.replace(" ", "_")
+        stripped[i] = v.replace("-", "_")
+        stripped[i] = v.replace('altitude', 'alt')
+        stripped[i] = v.replace('acceleration', 'acc')
         match v:
             case 'main' | 'm':
                 stripped.remove(v)
@@ -30,7 +35,8 @@ def get_input(str_to_show):
             case 'h' | 'help':
                 stripped.remove(v)
                 text_help()
-    print(stripped)
+            case '':
+                stripped.remove(v)
     return stripped
 
 
@@ -119,38 +125,91 @@ def organize(file):
 def visualize(file):
     header = list(main_file.columns)
     items_to_show = []
+    time_slice = []
 
-    data_input = get_input('Visualize - What data do you want to see?')
-    for choice in data_input.copy():
-        match choice:
-            case 'alt':
-                alt_choices = get_input('What altitude data do you want?')
-                print('alt')
-                data_input.remove(choice)
-            case 'gps':
-                gps_choices = get_input('What GPS data do you want?')
-                print('gps')
-                data_input.remove(choice)
-            case 'acc':
-                acc_choices = get_input('What acceleration data do you want?')
-                print('acc')
-                data_input.remove(choice)
-
-    # Creating a list of items to present.
-    for item in data_input:
-        item = item.replace(" ", "_")
-        item = item.replace('altitude', 'alt')
-        if item in header:
-            items_to_show.append(item)
-        else:
-            print(f'{item} does not exist.')
+    while not items_to_show:
+        data_input = get_input('Visualize - What data do you want to see?')
+        for item in data_input.copy():
+            match item:
+                case 'alt':
+                    alt_choices = get_input('What altitude data do you want?')
+                    for choice in alt_choices:
+                        match choice:
+                            case 'gps':
+                                items_to_show.append('gps_alt')
+                            case 'bme':
+                                items_to_show.append('bme_alt')
+                            case 'all':
+                                items_to_show.append('gps_alt')
+                                items_to_show.append('bme_alt')
+                    continue
+                case 'gps':
+                    gps_choices = get_input('What GPS data do you want?')
+                    for choice in gps_choices:
+                        match choice:
+                            case 'speed':
+                                items_to_show.append('speed')
+                            case 'alt':
+                                items_to_show.append('gps_alt')
+                            case 'all':
+                                items_to_show.append('speed')
+                                items_to_show.append('gps_alt')
+                    continue
+                case 'acc':
+                    acc_choices = get_input('What acceleration data do you want?')
+                    for choice in acc_choices:
+                        match choice:
+                            case 'x':
+                                items_to_show.append('acc_x')
+                            case 'y':
+                                items_to_show.append('acc_y')
+                            case 'z':
+                                items_to_show.append('acc_z')
+                            case 'all':
+                                items_to_show.append('acc_x')
+                                items_to_show.append('acc_y')
+                                items_to_show.append('acc_z')
+                    continue
+            print(items_to_show)
+            if (item in header) and (item not in items_to_show):
+                items_to_show.append(item)
+            elif item not in header:
+                print(f'{item} does not exist.')
 
     time_input = get_input('''Visualize - What time frame do you want?
                            You can choose from 10:31 to 4:41.''')
 
+    for i, time in enumerate(time_input):
+        sep_index = time.find(':')
+        if sep_index == -1:
+            a = int(time[:1])
+            b = int(time[1:])
 
+            if a < 9:
+                a = f'0{a}'
+            if b < 9:
+                b = f'0{b}'
 
+            time_input[i] = f'{a}:{b}'
+        elif sep_index == 2:
+            time_input[i] = time
+            continue
+        else:
+            a = int(time[0:sep_index])
+            b = int(time[sep_index + 1:])
+            if a < 9:
+                a = f'0{a}'
+            if b < 9:
+                b = f'0{b}'
+            time_input[i] = f'{a}:{b}'
+        time_slice.append(time)
+
+    print(time_slice)
     graph = main_file[items_to_show]
+    try:
+        graph = graph[time_slice[0]:time_slice[1]]
+    except IndexError:
+        print('Error occurred, defaulting to whole time range')
 
     # Display data.
     if not graph.empty:

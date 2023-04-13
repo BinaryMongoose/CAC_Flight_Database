@@ -33,7 +33,6 @@ def slice_file(raw_path: Path) -> dict:
     true_header = file[0]
 
     # Creating a dictionary
-
     for index, line in enumerate(file):  # Makes an array of the indexes of headers.
         if line == true_header:
             restart_index.append(index)
