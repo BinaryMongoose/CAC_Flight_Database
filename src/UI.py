@@ -145,12 +145,37 @@ def visualize(file):
         else:
             print(f'{item} does not exist.')
 
-    time_input = get_input('''Visualize - What time frame do you want?
-                           You can choose from 10:31 to 4:41.''')
+    time_slice = get_input('''Visualize - What time frame do you want?
+You can choose from 10:31 to 4:41.
+The real interesting stuff happened between 11:00 and 2:00''')
 
+    for i, time in enumerate(time_slice):
+        sep_index = time.find(':')
+        if sep_index == -1:
+            a = int(time[:1])
+            b = int(time[1:])
 
+            if a < 9:
+                a = f'0{a}'
+            if b < 9:
+                b = f'0{b}'
+
+            time_slice[i] = f'{a}:{b}'
+        elif sep_index == 2:
+            continue
+        else:
+            a = int(time[0:sep_index])
+            b = int(time[sep_index + 1:])
+
+            if a < 9:
+                a = f'0{a}'
+            if b < 9:
+                b = f'0{b}'
+
+            time_slice[i] = f'{a}:{b}'
 
     graph = main_file[items_to_show]
+    graph = graph[time_slice[0]:time_slice[1]]
 
     # Display data.
     if not graph.empty:
