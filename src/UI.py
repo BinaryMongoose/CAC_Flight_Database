@@ -209,8 +209,8 @@ def visualize(file):
     try:
         graph = graph[time_slice[0]:time_slice[1]]
     except IndexError:
-        print('Error occurred, defaulting to whole time range')
-
+        print('Error occurred, defaulting to interesting time range')
+        graph = graph['11:20':'02:30']
     # Display data.
     if not graph.empty:
         graph.plot()
