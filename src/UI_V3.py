@@ -19,7 +19,7 @@ You can navigate this database by searching for:
           
 Type "h" or "help" for more information. Otherwise, I'll assume you know what you are doing."""
 
-help_text = """\
+help_text = f"""\
 Box Diagram:
 +------------------------+-------------------+
 |          OUT           |        IN         |
@@ -28,6 +28,13 @@ Box Diagram:
 | BME (temp & alt)       | ISM (acc x, y, z) |
 | GPS (cord, speed, alt) |                   |
 +------------------------+-------------------+
+
+Available Sensors:
+{list(sensor_items.keys())}
+
+Available Measurements:
+
+
 """
 
 
@@ -44,7 +51,7 @@ def specify_mes(item):
         if m in sensor_items[item]:
             m_items.append(f'{item}_{m}')
         else:
-            print(f'{item} does not exist.')
+            print(f'{m} does not exist.')
 
     return m_items
 
@@ -64,9 +71,42 @@ def specify_sensors(item):
         if s in a_sensors:
             s_items.append(f'{s}_{item}')
         else:
-            print(f'{item} does not exist.')
+            print(f'{s} does not exist.')
 
     return s_items
+
+
+def get_time():
+    time_slice = []
+    time_input = get_input('''Visualize - What time frame do you want?
+                               You can choose from 10:31 to 4:41.''')
+
+    for i, time in enumerate(time_input):
+        sep_index = time.find(':')
+        if sep_index == -1:
+            a = int(time[:1])
+            b = int(time[1:])
+
+            if a < 9:
+                a = f'0{a}'
+            if b < 9:
+                b = f'0{b}'
+
+            time_input[i] = f'{a}:{b}'
+        elif sep_index == 2:
+            time_input[i] = time
+            continue
+        else:
+            a = int(time[0:sep_index])
+            b = int(time[sep_index + 1:])
+            if a < 9:
+                a = f'0{a}'
+            if b < 9:
+                b = f'0{b}'
+            time_input[i] = f'{a}:{b}'
+        time_slice.append(time)
+
+    return time_slice
 
 
 def visualize(v_input):
@@ -88,11 +128,19 @@ def visualize(v_input):
 
     if graph_data:
         graph = main_file[graph_data]
+        try:
+            time_slice = get_time()
+            graph = graph[time_slice[0]:time_slice[1]]
+        except IndexError:
+            print('Error occurred, defaulting to interesting time range')
+            graph = graph['11:20':'02:30']
+
         graph.plot()
         plt.show()
 
 
 def get_input(str_to_show=''):
+    new_stripped = []
     # Actually slicing and dicing the string to match specs.
     print('\n')
     print(str_to_show)
@@ -104,14 +152,17 @@ def get_input(str_to_show=''):
         stripped[i] = v.replace('-', '_')
         stripped[i] = v.replace('altitude', '_')
         stripped[i] = v.replace('temperature', '_')
+    for v in stripped:
+        if v != '':
+            new_stripped.append(v)
 
     # Should move to another function, but can't be bothered.
-    match stripped:
+    match new_stripped:
         case ('h', *h_input):
             user_help(h_input)
         case ('v', *v_input):
             visualize(v_input)
-    return stripped
+    return new_stripped
 
 
 def load_file(path_to_file):
@@ -125,7 +176,7 @@ def load_file(path_to_file):
 
     try:
         flight_panda['hh.mm'] = pd.to_datetime(flight_panda['gps_time'])
-    except:
+    except KeyError:
         # I know this is bad! But I can't have this exception slowing the program down.
         flight_panda['hh.mm'] = pd.to_datetime(flight_panda['eye_time'])
     flight_panda['hh.mm'] = flight_panda['hh.mm'].dt.strftime('%H:%M')
