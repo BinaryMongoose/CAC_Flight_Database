@@ -1,14 +1,15 @@
-import warnings
 import itertools
+import warnings
 from pathlib import Path
-from pprint import pprint
 
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
 
 warnings.simplefilter(action='ignore', category=UserWarning)
 
 sensor_items = {}
+sensor_pos = {'inside': ['LTR', 'BME', 'GPS'],
+              'outside': ['ISM']}
 
 intro_text = """\
 We have made a payload with four major sensors.
@@ -38,7 +39,7 @@ Available Measurements:
 """
 
 
-def user_help(h_input):
+def user_help():
     print(help_text)
 
 
@@ -79,7 +80,7 @@ def specify_sensors(item):
 def get_time():
     time_slice = []
     time_input = get_input('''Visualize - What time frame do you want?
-                               You can choose from 10:31 to 4:41.''')
+    You can choose from 10:31 to 4:41.''')
 
     for i, time in enumerate(time_input):
         sep_index = time.find(':')
@@ -109,6 +110,17 @@ def get_time():
     return time_slice
 
 
+def generate_legend(graph_data):
+    legend = []
+    for data in graph_data:
+        m_data = data.replace('_', ' ')
+        m_data = m_data.replace('ism', 'inside')
+        m_data = m_data.replace('bme', 'outside')
+        legend.append(m_data)
+
+    return legend
+
+
 def visualize(v_input):
     header = main_file.columns
     graph_data = []
@@ -123,19 +135,27 @@ def visualize(v_input):
                 graph_data.append(specify_sensors(item))
         if item in header:
             graph_data.append(item)
-
-    graph_data = list(itertools.chain(*graph_data))
+    is_multi_list = any(isinstance(i, list) for i in graph_data)
+    if is_multi_list:
+        graph_data = list(itertools.chain(*graph_data))
 
     if graph_data:
-        graph = main_file[graph_data]
-        try:
-            time_slice = get_time()
-            graph = graph[time_slice[0]:time_slice[1]]
-        except IndexError:
-            print('Error occurred, defaulting to interesting time range')
-            graph = graph['11:20':'02:30']
+        # graph = main_file[graph_data]
+        # legend = generate_legend(graph_data)
+        # print(legend)
+        # try:
+        #     time_slice = get_time()
+        #     graph = graph[time_slice[0]:time_slice[1]]
+        # except IndexError:
+        #     print('Error occurred, defaulting to interesting time range')
+        #     graph = graph['11:20':'02:30']
 
-        graph.plot()
+        for data in graph_data:
+            sub_graph = main_file[data]
+            sub_graph.plot()
+
+        # graph.plot()
+        # plt.legend(legend)
         plt.show()
 
 
@@ -159,7 +179,7 @@ def get_input(str_to_show=''):
     # Should move to another function, but can't be bothered.
     match new_stripped:
         case ('h', *h_input):
-            user_help(h_input)
+            user_help()
         case ('v', *v_input):
             visualize(v_input)
     return new_stripped
