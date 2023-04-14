@@ -205,7 +205,7 @@ def load_file(path_to_file):
     return flight_panda
 
 
-main_file = load_file('src/formatted_data2.csv')
+main_file = load_file('data/formatted_data2.csv')
 
 
 def find_items(file):
