@@ -80,7 +80,7 @@ def specify_sensors(item):
 def get_time():
     time_slice = []
     time_input = get_input('''Visualize - What time frame do you want?
-    You can choose from 10:31 to 4:41.''')
+You can choose from 10:31 to 4:41.''')
 
     for i, time in enumerate(time_input):
         sep_index = time.find(':')
@@ -93,9 +93,10 @@ def get_time():
             if b < 9:
                 b = f'0{b}'
 
-            time_input[i] = f'{a}:{b}'
+            time = f'{a}:{b}'
         elif sep_index == 2:
-            time_input[i] = time
+            time = time
+            time_slice.append(time)
             continue
         else:
             a = int(time[0:sep_index])
@@ -104,7 +105,7 @@ def get_time():
                 a = f'0{a}'
             if b < 9:
                 b = f'0{b}'
-            time_input[i] = f'{a}:{b}'
+            time = f'{a}:{b}'
         time_slice.append(time)
 
     return time_slice
@@ -114,15 +115,15 @@ def generate_legend(graph_data):
     legend = []
     for data in graph_data:
         m_data = data.replace('_', ' ')
-        m_data = m_data.replace('ism', 'inside')
-        m_data = m_data.replace('bme', 'outside')
+        m_data = m_data.replace('ism', 'Inside')
+        m_data = m_data.replace('bme', 'Outside')
         legend.append(m_data)
 
     return legend
 
 
 def visualize(v_input):
-    header = main_file.columns
+    header = list(main_file.columns)
     graph_data = []
 
     if not v_input:  # Checking if we got anything from advanced users.
@@ -135,27 +136,28 @@ def visualize(v_input):
                 graph_data.append(specify_sensors(item))
         if item in header:
             graph_data.append(item)
-    is_multi_list = any(isinstance(i, list) for i in graph_data)
-    if is_multi_list:
-        graph_data = list(itertools.chain(*graph_data))
+    # is_multi_list = any(isinstance(i, list) for i in graph_data)
+    # if is_multi_list:
+    graph_data = [item for sublist in graph_data for item in sublist]
 
     if graph_data:
-        # graph = main_file[graph_data]
-        # legend = generate_legend(graph_data)
-        # print(legend)
-        # try:
-        #     time_slice = get_time()
-        #     graph = graph[time_slice[0]:time_slice[1]]
-        # except IndexError:
-        #     print('Error occurred, defaulting to interesting time range')
-        #     graph = graph['11:20':'02:30']
+        graph = main_file[graph_data]
+        legend = generate_legend(graph_data)
+        print(legend)
+        try:
+            time_slice = get_time()
+            print(time_slice)
+            graph = graph[time_slice[0]:time_slice[1]]
+        except IndexError as e:
+            print(f'{e} occurred, defaulting to interesting time range')
+            graph = graph['11:20':'02:30']
 
-        for data in graph_data:
-            sub_graph = main_file[data]
-            sub_graph.plot()
+        # for data in graph_data:
+        #     sub_graph = main_file[data]
+        #     sub_graph.plot()
 
-        # graph.plot()
-        # plt.legend(legend)
+        graph.plot(subplots=True)
+        plt.legend()
         plt.show()
 
 
@@ -209,7 +211,6 @@ main_file = load_file('data/formatted_data2.csv')
 
 
 def find_items(file):
-    sensor_items = {}
     header = list(file.columns)
     for column_name in header:
         sep_index = column_name.find('_')
