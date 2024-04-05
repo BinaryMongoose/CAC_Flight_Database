@@ -5,16 +5,14 @@ If you want to add files to this database, they must be in this format.
 
 
 ## Data
-The first column must be the time of the launch. 
-Whether that's the duration of the flight, or actual time. 
+A header is formatted. The format is up to you, but it should include at least two parts. The measurement and the sensor.
 
-The name of the sensor, underscore, and then the measurement. 
-Everything lowercase. Only use the first 6 letter of the sensor.
+Example header:
+temp_in_ism_c
 
-Examples:
-gps_time
-bme288_temp
-ltr90_uv
+Which is in the format:
+measurement_location_sensor_unit
+
 
 ## Meta Data
 This script automatically creates metadata, but it may not be accurate.

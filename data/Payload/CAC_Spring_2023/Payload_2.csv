@@ -1,4 +1,4 @@
-hh.mm,bme_temp,bme_alt,ltr_uv,ism_temp,ism_x,ism_y,ism_z,gps_time,gps_latitude,gps_longitude,gps_alt,gps_speed,gps_sats
+time,temp_in_bme_c,alt_na_bme_m,uv_out_ltr_uv,temp_in_ism_c,x_na_ism_m/s,y_na_ism_m/s,z_na_ism_m/s,time_na_gps,latitude_na_gps,longitude_na_gps,alt_na_gps_m,speed_na_gps_mph,sats_na_gps_num
 10:31,35.46,405.88,25,27.94,-3.26,7.82,5.66,10:31:50,33.664295,-114.007217,0.0,0.25,0
 10:31,35.51,406.4,26,27.96,-3.79,7.21,5.42,10:31:51,33.664299,-114.007217,465.2,0.2,7
 10:31,35.54,406.48,35,27.98,-2.9,7.22,6.01,10:31:52,33.664299,-114.007217,465.4,0.13,6
